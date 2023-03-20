@@ -50,8 +50,8 @@ def main():
     iterations = 100 # default
     if len(sys.argv) == 2:
         iterations = int(sys.argv[1])
-    print ("Iterations: ")
-    print (iterations)
+    #print ("Iterations: ")
+    #print (iterations)
 
     init()
     
@@ -143,50 +143,43 @@ def main():
         # une position legale est dans la carte et pas sur un mur deja pose ni sur un joueur
         # attention: pas de test ici qu'il reste un chemin vers l'objectif
         
-        path = A_star((player + 1) % 2 , True , pos , pos2)
+        path = A_start((player + 1) % 2 , True , pos , pos2)
         row1 , col1 = path[-1]
-        row2 , col2 = A_star(player , True , pos , pos2)[-1]
+        row2 , col2 = A_start(player , True , pos , pos2)[-1]
         if pos2 != None :
             pos = pos2
         row , col = pos
-        print("legal pos ",pos , " ",((row2,col2) == objectifs[player ]))
-        print("legal pos ",pos , " ",((row1,col1) == objectifs[(player + 1) % 2])  )
-        return ((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and ((row2,col2) == objectifs[player ]) and    ((row1,col1) == objectifs[(player + 1) % 2])  and row>lMin and row<lMax-1 and col>=cMin and col<cMax)
-       
-    def draw_wall_location_strategie_1(player , path_next_player):
+        return ((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and ((row2,col2) == objectifs[player ]) and ((row1,col1) == objectifs[(player + 1) % 2])  and row>lMin and row<lMax-1 and col>=cMin and col<cMax)
+        
+    def draw_random_wall_location(player):
         # tire au hasard un couple de position permettant de placer un mur
-        i = 0
         while True:
-            if (i<len(path_next_player)-1):
-                i =+ 1
-                loc = path_next_player[i]
-            else :
-                loc = (random.randint(lMin,lMax),random.randint(cMin,cMax))
-            print(loc , " ", legal_wall_position(loc , player))
-            if legal_wall_position(loc , player):  
+            random_loc  = (random.randint(lMin,lMax),random.randint(cMin,cMax))
+            if legal_wall_position(random_loc , player):  
                 inc_pos =[(0,1),(0,-1),(1,0),(-1,0)] 
                 random.shuffle(inc_pos)
                 for w in inc_pos:
-                    loc_bis = (loc[0] + w[0],loc[1]+w[1])
-                    if legal_wall_position(loc,  player , loc_bis ):
-                        return(loc,loc_bis)
+                    random_loc_bis = (random_loc[0] + w[0],random_loc[1]+w[1])
+                    if legal_wall_position(random_loc,  player , random_loc_bis ):
+                        return(random_loc,random_loc_bis)
             
     #-------------------------------
     # Fonctions qui return True si le joueur player lui reste en moins un mur à positionner, False sinon
     #-------------------------------
     def more_walls(player):
-        print("walls : ", wallStates(walls[player]))
+        #print("walls : ", wallStates(walls[player]))
         for o in walls[player]:
             if(player == 0 and o.get_rowcol()[0] == 0) or (player == 1 and o.get_rowcol()[0] == nbLignes-2) :
                 w1 = o 
                 w2 = walls[player][walls[player].index(w1)+ nbCols - 6]
                 return w1 , w2
-        return None
+        return None  
+   
     
     #-------------------------------
     # Fonction qui applique A*
     #-------------------------------
-    def A_star(player , wall = False , pos=None , pos2=None):  
+    def A_start(player , wall = False , pos=None , pos2=None):  
         g =np.ones((nbLignes,nbCols),dtype=bool)  # une matrice remplie par defaut a True  
         for w in wallStates(allWalls):            # on met False quand murs
             g[w]=False
@@ -206,8 +199,60 @@ def main():
         p = ProblemeGrid2D(playerStates(players)[player],objectifs[player],g,'manhattan')
         path = probleme.astar(p,verbose=False)
         return path
-        
     
+    #-------------------------------
+    # Stratégie aléatoire
+    #-------------------------------
+    def aleatoire ( joueur ) :
+        print("C'est le tour du joueur ",player)
+        w = more_walls(player)
+        if( w != None):
+            action = random.randint(0,1)
+            if action == 0 :
+                #placer un mur
+                print("création d'un mur")
+                ((x1,y1),(x2,y2)) = draw_random_wall_location(player)
+                w[0].set_rowcol(x1,y1)
+                w[1].set_rowcol(x2,y2)
+                print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
+                game.mainiteration()
+            else:
+                #déplacer le joueur
+                #for i in range(iterations):
+                
+                # on fait bouger le joueur i jusqu'à son but
+                # en suivant le chemin trouve avec A* 
+                    row,col = A_start(player)[1]
+                    posPlayers[player]=(row,col)
+                    players[player].set_rowcol(row,col)
+                    print ("1 pos joueur ",player," : ", row,col)
+                    if (row,col) == objectifs[player]:
+                        print("le joueur ",player," a atteint son but!")
+                        return True
+                    # mise à jour du pleateau de jeu
+                    game.mainiteration()
+
+        else:
+            #déplacer le joueur
+            #for i in range(iterations):
+            
+            # on fait bouger le joueur i jusqu'à son but
+            # en suivant le chemin trouve avec A* 
+                row,col = A_start(player)[1]
+                posPlayers[player]=(row,col)
+                players[player].set_rowcol(row,col)
+                print ("pos joueur ",player," : ", row,col)
+                if (row,col) == objectifs[player]:
+                    print("2 le joueur ",player," a atteint son but!")
+                    return True
+                # mise à jour du pleateau de jeu
+                game.mainiteration() 
+        return False
+    #-------------------------------
+    # Stratégie alpha_beta
+    #-------------------------------
+    def alpha_beta( player ):
+        return 0
     #-------------------------------
     # Boucle principale de déplacements 
     #-------------------------------
@@ -218,35 +263,11 @@ def main():
     END = False
     player = 0
     while(not END):
-        print("C'est le tour du joueur ",player)
-        w = more_walls(player)
-        path_current_player = A_star(player)
-        path_next_player = A_star((player+1)%2)
-        if( w != None and len(path_current_player) > len(path_next_player) ):
-                #placer un mur
-                print("création d'un mur")
-                ((x1,y1),(x2,y2)) = draw_wall_location_strategie_1(player , path_next_player)
-                w[0].set_rowcol(x1,y1)
-                w[1].set_rowcol(x2,y2)
-                print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
-                game.mainiteration()
-        else:
-            #déplacer le joueur
-            # on fait bouger le joueur i jusqu'à son but
-            # en suivant le chemin trouve avec A* 
-                row,col = A_star(player)[1]
-                posPlayers[player]=(row,col)
-                players[player].set_rowcol(row,col)
-                print ("pos joueur ",player," : ", row,col)
-                if (row,col) == objectifs[player]:
-                    print("2 le joueur ",player," a atteint son but!")
-                    END = True
-                    break
-                # mise à jour du pleateau de jeu
-                game.mainiteration()
+        if (aleatoire(player)):
+            break
         player = (player +1) % 2
             
-
+    game.mainiteration()
     pygame.quit()
     
     
@@ -261,6 +282,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
-
-
+ 
