@@ -295,7 +295,29 @@ def main():
             if not ((row + w[0] , col + w[1]) in walls_pos) :
                 l.append((row + w[0] , col + w[1]))
         return l
-        
+    
+    
+    def possible_wall_placements(player):
+        """
+            @param player: l'indice d'un joueur
+            @return : une liste de couple , contenant les postions des mur pouvant
+            etre placés a proximité du joueur , ainsi qu'une direction ,
+            EX : l[0] = ((2,5),(0,1)) un mur pourrait etre place de maniere horizontale
+            à partir de la case (2,5) => Ses coordonnées seront donc : (2,5),(2,6) 
+        """
+        nb = 0
+        row , col = players[player].get_rowcol()
+        l = []
+        inc_pos =[(0,1),(0,-1),(1,0),(-1,0)]
+        for pos in inc_pos:
+            loc = (pos[0] + row,pos[1]+col)
+            if legal_wall_position(loc, player):
+                directions =[((0,1),"RIGHT"),((0,-1),"LEFT"),((1,0),"DOWN"),((-1,0),"UP")]
+                for dir in directions:
+                    loc_bis = (loc[0] + dir[0][0],loc[1]+dir[0][1])
+                    if legal_wall_position(loc,  player,loc_bis):
+                        l.append((loc,dir[0]))
+        return l
 
     def evaluation_function(player):
         """
@@ -317,7 +339,63 @@ def main():
                 return A*diff_paths + B*diff_nbWalls + C*diff_nearWalls + D*diff_possibleMoves
 
 
+    def choose_action(player):
+        maxCost = -1
+        row,col = -1,-1
+        direction = None
+        action = ""
+        possibleMoves = possible_moves(player)
+        for pos in possibleMoves:
+            cost = 0
+            #cost = MinMax(player,pos)
+            if maxCost < cost :
+                row , col = pos[0] , pos[1]
+                maxCost = cost
+                action = "MOVE"
+        
+        if(nb_walls(player))>0 :
+            possibleWallsPosition = possible_wall_placements(player)
+            for pos,dir in possibleWallsPosition :
+                #cost = MinMax(player,None,pos,dir)
+                if maxCost < cost :
+                    row , col = pos[0] , pos[1]
+                    direction = dir
+                    maxCost = cost
+                    action = "PLACE_WALL"
+                    
+        return action , row , col , direction
 
+    def MinMax (player, currentPos, posWall, directionWall , depth):
+        if depth ==0 : 
+            return evaluation_function(player)
+        else :
+            if (depth % 2 == 0):
+                max_ev = -math.inf
+                possibleMoves = possible_moves(player)
+                for pos in possibleMoves:
+                    eval = MinMax(player, pos,None,None,depth-1)
+                    max_ev = max(eval, max_ev)
+                
+                if(nb_walls(player))>0 :
+                    possibleWallsPosition = possible_wall_placements(player)
+                    for pos,dir in possibleWallsPosition :
+                        eval = MinMax(player, None,pos, dir,depth-1)
+                        max_ev = max(eval, max_ev)                    if maxCost < cost :
+                return max_ev
+            else:
+                min_ev = math.inf
+                possibleMoves = possible_moves(player)
+                for pos in possibleMoves:
+                    eval = MinMax(player, pos,None,None,depth-1)
+                    min_ev = min(eval, min_ev)
+                
+                if(nb_walls(player))>0 :
+                    possibleWallsPosition = possible_wall_placements(player)
+                    for pos,dir in possibleWallsPosition :
+                        eval = MinMax(player, None,pos, dir,depth-1)
+                        min_ev = min(eval, min_ev)                    if maxCost < cost :
+                return min_ev
+                    
 
 
 
