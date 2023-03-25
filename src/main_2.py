@@ -20,9 +20,14 @@ import pySpriteWorld.glo
 
 from search.grid2D import ProblemeGrid2D
 from search import probleme
-
-
-
+import math
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+# Définir des constantes comme des facteurs pour la fonction d'évaluation
+# ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+A = 0.75
+B = 0.15
+C = 0.5
+D = 0.5
 
 
 
@@ -96,7 +101,7 @@ def main():
     #-------------------------------
     
     def wallStates(walls): 
-        # donne la liste des coordonnees dez murs
+        # donne la liste des coordonnees des murs
         return [w.get_rowcol() for w in walls]
     
     def playerStates(players):
@@ -179,10 +184,9 @@ def main():
         return None
           
     #-------------------------------
-    # Fonctions qui return True si le joueur player lui reste en moins un mur à positionner, False sinon
+    # Fonctions qui return las coordonées d'un mûr si le joueur player lui reste en moins un mur à positionner, None sinon
     #-------------------------------
     def more_walls(player):
-        #print("walls : ", wallStates(walls[player]))
         for o in walls[player]:
             if(player == 0 and o.get_rowcol()[0] == 0) or (player == 1 and o.get_rowcol()[0] == nbLignes-2) :
                 w1 = o 
@@ -214,7 +218,88 @@ def main():
         p = ProblemeGrid2D(playerStates(players)[player],objectifs[player],g,'manhattan')
         path = probleme.astar(p,verbose=False)
         return path
+    #------------------------------------------------------------------#
+    #                       Fonctions auxiliaires                      #
+    #------------------------------------------------------------------#
+    def nb_walls(player):
+        """
+            @param player: l'indice d'un joueur
+            @return : le nombre de mûrs qu'ils lui restent
+        """
+        nb = 0
+        for o in walls[player]:
+            if(player == 0 and o.get_rowcol()[0] == 0):
+                nb += 1
+            elif (player == 1 and o.get_rowcol()[0] == nbLignes-2) :
+                nb += 1
+        return nb
+
+    def near_walls(player):
+        nb = 0
+        row , col = players[player].get_rowcol()
+        walls_pos = wallStates(allWalls)
+        if (row-1,col) in walls_pos :
+            if (row-1,col-1) in walls_pos:
+                nb+=1
+            if (row-1,col+1) in walls_pos:
+                 nb+=1
+
+        if (row+1,col) in walls_pos :
+            if (row+1,col-1) in walls_pos:
+                nb+=1
+            if (row+1,col+1) in walls_pos:
+                 nb+=1
+        
+        if (row,col-1) in walls_pos :
+            if (row-1,col-1) in walls_pos:
+                nb+=1
+            if (row+1,col-1) in walls_pos:
+                 nb+=1
+        
+        if (row,col+1) in walls_pos :
+            if (row-1,col+1) in walls_pos:
+                nb+=1
+            if (row+1,col+1) in walls_pos:
+                 nb+=1
+        
+        return nb
     
+    def possible_moves(player):
+        l = []
+        row , col = players[player].get_rowcol()
+        inc_pos =[(0,-1),(0,1),(-1,0),(1,0)] 
+        walls_pos = wallStates(allWalls)
+        for w in inc_pos :
+            if not ((row + w[0] , col + w[1]) in walls_pos) :
+                l.append((row + w[0] , col + w[1]))
+        return l
+        
+
+    def evaluation_function(player):
+        """
+            @param player: l'indice du joueur courant
+            @return : la valeur de la fonction d'évaluation
+        """
+        if players[player].get_rowcol() == objectifs[player] :
+            #le joueur courant est arrivée à son objectif
+            return math.inf
+        else:
+            if players[(player+1)%2].get_rowcol() == objectifs[(player+1)%2] :
+                #le joueur adversaire est arrivée à son objectif
+                return -math.inf
+            else :
+                diff_paths = A_star((player+1)%2) - A_star(player)
+                diff_nbWalls = nb_walls(player) - nb_walls((player+1)%2)
+                diff_nearWalls = near_walls((player+1)%2) - near_walls(player)
+                diff_possibleMoves = len(possible_moves(player)) - len(possible_moves((player+1)%2))
+                return A*diff_paths + B*diff_nbWalls + C*diff_nearWalls + D*diff_possibleMoves
+
+
+
+
+
+
+
     #-------------------------------
     # Stratégie aléatoire
     #-------------------------------
