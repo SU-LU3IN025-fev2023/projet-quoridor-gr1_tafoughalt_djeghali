@@ -257,34 +257,7 @@ def main():
         return nb
 
     def near_walls(player):
-        nb = 0
-        row , col = players[player].get_rowcol()
-        walls_pos = wallStates(allWalls)
-        if (row-1,col) in walls_pos :
-            if (row-1,col-1) in walls_pos:
-                nb+=1
-            if (row-1,col+1) in walls_pos:
-                 nb+=1
-
-        if (row+1,col) in walls_pos :
-            if (row+1,col-1) in walls_pos:
-                nb+=1
-            if (row+1,col+1) in walls_pos:
-                 nb+=1
-        
-        if (row,col-1) in walls_pos :
-            if (row-1,col-1) in walls_pos:
-                nb+=1
-            if (row+1,col-1) in walls_pos:
-                 nb+=1
-        
-        if (row,col+1) in walls_pos :
-            if (row-1,col+1) in walls_pos:
-                nb+=1
-            if (row+1,col+1) in walls_pos:
-                 nb+=1
-        
-        return nb
+        return 4 - len(possible_moves(player))
     
     def possible_moves(player):
         l = []
