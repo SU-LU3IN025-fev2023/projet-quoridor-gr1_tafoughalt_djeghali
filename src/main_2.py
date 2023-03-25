@@ -312,7 +312,7 @@ def main():
                 return A*diff_paths + B*diff_nbWalls + C*diff_nearWalls + D*diff_possibleMoves
 
 
-    def choose_action(player):
+    def choose_action(player , MinMax , depth):
         maxCost = -1
         row,col = -1,-1
         direction = None
@@ -323,7 +323,10 @@ def main():
             sauv_pos = players[player].get_rowcol()
             players[player].set_rowcol(pos)
             posPlayers[player]= pos
-            cost = MinMax(player,depth)
+            if MinMax :
+                cost = MinMax(player,depth , 1)
+            else :
+                cost = alpha_beta(player,depth , -math.inf , math.inf , 1)
             players[player].set_rowcol(sauv_pos)
             posPlayers[player]= sauv_pos
             
@@ -340,7 +343,10 @@ def main():
                 sauv_w = w1.get_rowcol() , w2.get_rowcol()
                 w1.set_rowcol(pos[0] , pos[1])
                 w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
-                cost = MinMax(player,depth)
+                if MinMax :
+                    cost = MinMax(player,depth , 1)
+                else :
+                    cost = alpha_beta(player,depth , -math.inf , math.inf , 1)
                 w1.set_rowcol(sauv_w[0])
                 w2.set_rowcol(sauv_w[1])
                 
@@ -352,63 +358,7 @@ def main():
                     
         return action , row , col , direction
 
-    def MinMax (player, currentPos, posWall, directionWall , depth):
-        if depth ==0 : 
-            return evaluation_function(player)
-        else :
-            if (depth % 2 == 0):
-                max_ev = -math.inf
-                possibleMoves = possible_moves(player)
-                for pos in possibleMoves:
-                    sauv_pos = players[player].get_rowcol()
-                    players[player].set_rowcol(pos)
-                    posPlayers[player]= pos
-                    eval = MinMax(player,depth-1)
-                    players[player].set_rowcol(sauv_pos)
-                    posPlayers[player]= sauv_pos
-                    max_ev = max(eval, max_ev)
-
-                
-                if(nb_walls(player))>0 :
-                    possibleWallsPosition = possible_wall_placements(player)
-                    for pos,dir in possibleWallsPosition :
-                        w1 , w2 = more_walls(player)
-                        sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                        w1.set_rowcol(pos[0] , pos[1])
-                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
-                        eval = MinMax(player,depth-1)
-                        w1.set_rowcol(sauv_w[0])
-                        w2.set_rowcol(sauv_w[1])
-                        max_ev = max(eval, max_ev)             
-                return max_ev
-            else:
-                min_ev = math.inf
-                possibleMoves = possible_moves(player)
-                for pos in possibleMoves:
-                    sauv_pos = players[player].get_rowcol()
-                    players[player].set_rowcol(pos)
-                    posPlayers[player]= pos
-                    eval = MinMax(player, pos)
-                    players[player].set_rowcol(sauv_pos)
-                    posPlayers[player]= sauv_pos
-                    min_ev = min(eval, min_ev)
-                
-                if(nb_walls(player))>0 :
-                    possibleWallsPosition = possible_wall_placements(player)
-                    for pos,dir in possibleWallsPosition :
-                        w1 , w2 = more_walls(player)
-                        sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                        w1.set_rowcol(pos[0] , pos[1])
-                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
-                        eval = MinMax(player, None,pos, dir,depth-1)
-                        w1.set_rowcol(sauv_w[0])
-                        w2.set_rowcol(sauv_w[1])
-                        min_ev = min(eval, min_ev)                  
-                    
-                return min_ev
-
-
-
+    
     #-------------------------------
     # Stratégie aléatoire
     #-------------------------------
@@ -519,8 +469,8 @@ def main():
     #-------------------------------
     # Stratégie alpha_beta
     #-------------------------------
-    def alpha_beta( player , depth , alpha , beta):
-        if depth == 0 :
+    def alpha_beta( player , depth , alpha , beta , d):
+        if depth == d :
             return evaluation_function(player)
         else :
             if depth%2 == 0 :
@@ -530,22 +480,21 @@ def main():
                 for m in possibleMoves :
                     sauv_pos = players[player].get_rowcol()
                     players[player].set_rowcol(m)
-                    val = max(val ,alpha_beta( player , depth-1 , alpha , beta) )
+                    posPlayers[player]= m
+                    val = max(val ,alpha_beta( player , depth, alpha , beta , d+1) )
                     players[player].set_rowcol(sauv_pos)
+                    posPlayers[player]= sauv_pos
                     if val >= beta :
                         return val
                     alpha = max(alpha , val)
                 if nb_walls(player) > 0 :
-                    possibleWallPlacement = possible_moves(player) #cha,ger avec la fonction possible_wall_placement()
-                    for m in possibleWallPlacement :
+                    possibleWallsPosition = possible_wall_placements(player)
+                    for pos,dir in possibleWallsPosition :
                         w1 , w2 = more_walls(player)
                         sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                        w1.set_rowcol(m[0] , m[1])
-                        if m[2] == 0 :
-                            w2.set_rowcol(m[0] , m[1]+1)
-                        else :
-                            w2.set_rowcol(m[0]+1 , m[1])
-                        val = max(val ,alpha_beta( player , depth-1 , alpha , beta) )
+                        w1.set_rowcol(pos[0] , pos[1])
+                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
+                        val = max(val ,alpha_beta( player , depth , alpha , beta , d+1) )
                         w1.set_rowcol(sauv_w[0])
                         w2.set_rowcol(sauv_w[1])
                         if val >= beta :
@@ -554,26 +503,25 @@ def main():
             else:
                 #MIN
                 val = math.inf
-                possibleMoves = possible_moves(player)
+                possibleMoves = possible_moves((player + 1)%2)
                 for m in possibleMoves :
-                    sauv_pos = players[player].get_rowcol()
-                    players[player].set_rowcol(m)
-                    val = min(val ,alpha_beta( player , depth-1 , alpha , beta) )
-                    players[player].set_rowcol(sauv_pos)
+                    sauv_pos = players[(player + 1)%2].get_rowcol()
+                    players[(player + 1)%2].set_rowcol(m)
+                    posPlayers[(player + 1)%2]= m
+                    val = min(val ,alpha_beta( player , depth , alpha , beta , d+1) )
+                    players[(player + 1)%2].set_rowcol(sauv_pos)
+                    posPlayers[(player + 1)%2]= sauv_pos
                     if alpha >= val :
                         return val
                     beta = min(beta , val)
-                if nb_walls(player) > 0 :
-                    possibleWallPlacement = possible_moves(player) #cha,ger avec la fonction possible_wall_placement()
+                if nb_walls((player + 1)%2) > 0 :
+                    possibleWallPlacement = possible_moves((player + 1)%2) #cha,ger avec la fonction possible_wall_placement()
                     for m in possibleWallPlacement :
-                        w1 , w2 = more_walls(player)
+                        w1 , w2 = more_walls((player + 1)%2)
                         sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                        w1.set_rowcol(m[0] , m[1])
-                        if m[2] == 0 :
-                            w2.set_rowcol(m[0] , m[1]+1)
-                        else :
-                            w2.set_rowcol(m[0]+1 , m[1])
-                        val = min(val ,alpha_beta( player , depth-1 , alpha , beta) )
+                        w1.set_rowcol(pos[0] , pos[1])
+                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
+                        val = min(val ,alpha_beta( player , depth , alpha , beta , d+1) )
                         w1.set_rowcol(sauv_w[0])
                         w2.set_rowcol(sauv_w[1])
                         if alpha >= val :
@@ -581,7 +529,93 @@ def main():
                     beta = min(beta , val)
         return val
     
+    #-------------------------------
+    # Stratégie_3
+    #-------------------------------
+    def strategie_3(player, MinMax , depth):    
+        print("C'est le tour du joueur ",player)
+        action = choose_action(player , MinMax , depth)
+        w = more_walls(player)
+        path_current_player = A_star(player)
+        path_next_player = A_star((player+1)%2)
+        if( action[0] == "PLACE_WALL" ):
+            #placer un mur
+            print("création d'un mur")
+            x1,y1 = action[1]
+            x2,y2 = x1 + action[2][0] , y1 + action[2][1]
+            w[0].set_rowcol(x1,y1)
+            w[1].set_rowcol(x2,y2)
+            print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
+            game.mainiteration()
+        else:
+            #déplacer le joueur* 
+            row,col = action[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            print ("pos joueur ",player," : ", row,col)
+            if (row,col) == objectifs[player]:
+                print("2 le joueur ",player," a atteint son but!")
+                return True
+            # mise à jour du pleateau de jeu
+            game.mainiteration()
 
+    #-------------------------------
+    # Stratégie alpha_beta
+    #-------------------------------
+    def MinMax (player, depth ,d):
+        if depth ==d : 
+            return evaluation_function(player)
+        else :
+            if (depth % 2 == 0):
+                max_ev = -math.inf
+                possibleMoves = possible_moves(player)
+                for pos in possibleMoves:
+                    sauv_pos = players[player].get_rowcol()
+                    players[player].set_rowcol(pos)
+                    posPlayers[player]= pos
+                    eval = MinMax(player,depth , d+1)
+                    players[player].set_rowcol(sauv_pos)
+                    posPlayers[player]= sauv_pos
+                    max_ev = max(eval, max_ev)
+
+                
+                if(nb_walls(player))>0 :
+                    possibleWallsPosition = possible_wall_placements(player)
+                    for pos,dir in possibleWallsPosition :
+                        w1 , w2 = more_walls(player)
+                        sauv_w = w1.get_rowcol() , w2.get_rowcol()
+                        w1.set_rowcol(pos[0] , pos[1])
+                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
+                        eval = MinMax(player,depth, d+1)
+                        w1.set_rowcol(sauv_w[0])
+                        w2.set_rowcol(sauv_w[1])
+                        max_ev = max(eval, max_ev)             
+                return max_ev
+            else:
+                min_ev = math.inf
+                possibleMoves = possible_moves((player + 1)%2)
+                for pos in possibleMoves:
+                    sauv_pos = players[(player + 1)%2].get_rowcol()
+                    players[(player + 1)%2].set_rowcol(pos)
+                    posPlayers[(player + 1)%2]= pos
+                    eval = MinMax(player, depth, d+1)
+                    players[(player + 1)%2].set_rowcol(sauv_pos)
+                    posPlayers[(player + 1)%2]= sauv_pos
+                    min_ev = min(eval, min_ev)
+                
+                if(nb_walls((player + 1)%2))>0 :
+                    possibleWallsPosition = possible_wall_placements((player + 1)%2)
+                    for pos,dir in possibleWallsPosition :
+                        w1 , w2 = more_walls((player + 1)%2)
+                        sauv_w = w1.get_rowcol() , w2.get_rowcol()
+                        w1.set_rowcol(pos[0] , pos[1])
+                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
+                        eval = MinMax(player, depth, d+1)
+                        w1.set_rowcol(sauv_w[0])
+                        w2.set_rowcol(sauv_w[1])
+                        min_ev = min(eval, min_ev)                  
+                    
+                return min_ev
     
     #-------------------------------
     # Boucle principale de déplacements 
