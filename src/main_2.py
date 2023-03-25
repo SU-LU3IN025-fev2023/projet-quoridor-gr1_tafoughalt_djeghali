@@ -380,21 +380,20 @@ def main():
                     possibleWallsPosition = possible_wall_placements(player)
                     for pos,dir in possibleWallsPosition :
                         eval = MinMax(player, None,pos, dir,depth-1)
-                        max_ev = max(eval, max_ev)                    if maxCost < cost :
+                        max_ev = max(eval, max_ev)             
                 return max_ev
             else:
                 min_ev = math.inf
                 possibleMoves = possible_moves(player)
                 for pos in possibleMoves:
-                    eval = MinMax(player, pos,None,None,depth-1)
+                    eval = MinMax(player, pos)
                     min_ev = min(eval, min_ev)
                 
                 if(nb_walls(player))>0 :
                     possibleWallsPosition = possible_wall_placements(player)
                     for pos,dir in possibleWallsPosition :
                         eval = MinMax(player, None,pos, dir,depth-1)
-                        min_ev = min(eval, min_ev)                    if maxCost < cost :
-                return min_ev
+                        min_ev = min(eval, min_ev)                  
                     
 
 
