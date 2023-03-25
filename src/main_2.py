@@ -150,7 +150,7 @@ def main():
             pos = pos2
         row , col = pos
         return ((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and ((row2,col2) == objectifs[player ]) and ((row1,col1) == objectifs[(player + 1) % 2])  and row>lMin and row<lMax-1 and col>=cMin and col<cMax)
-        
+# Poser la question aiu pourquoi mettre row > lMax-1 et non pas >= 
     def draw_random_wall_location(player):
         # tire au hasard un couple de position permettant de placer un mur
         while True:
@@ -162,7 +162,29 @@ def main():
                     random_loc_bis = (random_loc[0] + w[0],random_loc[1]+w[1])
                     if legal_wall_position(random_loc,  player , random_loc_bis ):
                         return(random_loc,random_loc_bis)
+                    
+                    
     def draw_wall_location_strategie_1(player , path_next_player):
+        # tire au hasard un couple de position permettant de placer un mur
+        i = 0
+        while True:
+            if (i<len(path_next_player)-1):
+                i += 1
+                loc = path_next_player[i]
+                print("Loc :",loc,"      i:",i)
+
+            else :
+                loc = (random.randint(lMin,lMax),random.randint(cMin,cMax))
+            print(loc , " ", legal_wall_position(loc , player))
+            if legal_wall_position(loc , player):  
+                inc_pos =[(0,1),(0,-1),(1,0),(-1,0)] 
+                random.shuffle(inc_pos)
+                for w in inc_pos:
+                    loc_bis = (loc[0] + w[0],loc[1]+w[1])
+                    if legal_wall_position(loc,  player , loc_bis ):
+                        return(loc,loc_bis)
+     
+    def draw_wall_location_strategie_2(player , path_next_player):
         # tire au hasard un couple de position permettant de placer un mur
         i = 1
         while True and i<len(path_next_player):
@@ -265,17 +287,46 @@ def main():
         return False
     
     #-------------------------------
-    # Stratégie 1
+    # Stratégie 2
     #-------------------------------
     def strategie_1( player ):
         print("C'est le tour du joueur ",player)
         w = more_walls(player)
         path_current_player = A_star(player)
         path_next_player = A_star((player+1)%2)
-        if( w != None and len(path_current_player) > len(path_next_player) and draw_wall_location_strategie_1(player , path_next_player) != None ):
+        if( w != None and len(path_current_player) > len(path_next_player) ):
+            #placer un mur
+            print("création d'un mur")
+            ((x1,y1),(x2,y2)) = draw_wall_location_strategie_1(player , path_next_player)
+            w[0].set_rowcol(x1,y1)
+            w[1].set_rowcol(x2,y2)
+            print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
+            game.mainiteration()
+        else:
+            #déplacer le joueur
+            # on fait bouger le joueur i jusqu'à son but
+            # en suivant le chemin trouve avec A* 
+            row,col = A_star(player)[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            print ("pos joueur ",player," : ", row,col)
+            if (row,col) == objectifs[player]:
+                print("2 le joueur ",player," a atteint son but!")
+                return True
+            # mise à jour du pleateau de jeu
+            game.mainiteration()
+    #-------------------------------
+    # Stratégie 2
+    #-------------------------------
+    def strategie_2( player ):
+        print("C'est le tour du joueur ",player)
+        w = more_walls(player)
+        path_current_player = A_star(player)
+        path_next_player = A_star((player+1)%2)
+        if( w != None and len(path_current_player) > len(path_next_player) and draw_wall_location_strategie_2(player , path_next_player) != None ):
                 #placer un mur
                 print("création d'un mur")
-                ((x1,y1),(x2,y2)) = draw_wall_location_strategie_1(player , path_next_player)
+                ((x1,y1),(x2,y2)) = draw_wall_location_strategie_2(player , path_next_player)
                 w[0].set_rowcol(x1,y1)
                 w[1].set_rowcol(x2,y2)
                 print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
@@ -312,10 +363,10 @@ def main():
     player = 0
     while(not END):
         if player == 0:
-            if (strategie_1(player)):
+            if (strategie_2(player)):
                 break
         else :
-            if (aleatoire(player)):
+            if (strategie_1(player)):
                 break
         player = (player +1) % 2
             
