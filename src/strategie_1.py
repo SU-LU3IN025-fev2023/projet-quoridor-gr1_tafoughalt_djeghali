@@ -151,16 +151,20 @@ def main():
         row , col = pos
         print("legal pos ",pos , " ",((row2,col2) == objectifs[player ]))
         print("legal pos ",pos , " ",((row1,col1) == objectifs[(player + 1) % 2])  )
-        return ((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and ((row2,col2) == objectifs[player ]) and    ((row1,col1) == objectifs[(player + 1) % 2])  and row>lMin and row<lMax-1 and col>=cMin and col<cMax)
-       
+ #       return ((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and ((row2,col2) == objectifs[player ]) and    ((row1,col1) == objectifs[(player + 1) % 2])  and row>lMin and row<lMax-1 and col>=cMin and col<cMax)
+        return ((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and ((row2,col2) == objectifs[player ]) and    ((row1,col1) == objectifs[(player + 1) % 2])  and row>=lMin and row<lMax and col>=cMin and col<cMax)
+
     def draw_wall_location_strategie_1(player , path_next_player):
         # tire au hasard un couple de position permettant de placer un mur
         i = 0
         while True:
             if (i<len(path_next_player)-1):
-                i =+ 1
+                i += 1
                 loc = path_next_player[i]
+                print("Loc :",loc,"      i:",i)
+
             else :
+                print("here2")
                 loc = (random.randint(lMin,lMax),random.randint(cMin,cMax))
             print(loc , " ", legal_wall_position(loc , player))
             if legal_wall_position(loc , player):  
