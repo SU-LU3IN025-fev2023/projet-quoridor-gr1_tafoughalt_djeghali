@@ -1,12 +1,12 @@
 # Rapport de projet
 
 ## Groupe
-* XXX
-* YYY
+* Anyes TAFOUGHALT
+* Racha Nadine DJEGHALI
 
 ## Description des choix importants d'implémentation
 
-Blablabla
+Il nous est demandé dans ce projet d'implémenter différentes stratégies se pasant sur differents algorithmes notamment  **MinMax** et **AlphaBeta** en plus des éventuelles stratégies auxquelles on aurait déja pensé.
 
 ## Description des stratégies proposées
 
