@@ -449,7 +449,7 @@ def main():
                 players[player].set_rowcol(row,col)
                 print ("pos joueur ",player," : ", row,col)
                 if (row,col) in allObjectifs[player]:
-                    print("2 le joueur ",player," a atteint son but!")
+                    print("le joueur ",player," a atteint son but!")
                     return True
                 # mise à jour du pleateau de jeu
                 game.mainiteration() 
@@ -480,7 +480,7 @@ def main():
             players[player].set_rowcol(row,col)
             print ("pos joueur ",player," : ", row,col)
             if (row,col) in allObjectifs[player]:
-                print("2 le joueur ",player," a atteint son but!")
+                print("le joueur ",player," a atteint son but!")
                 return True
             # mise à jour du pleateau de jeu
             game.mainiteration()
@@ -538,7 +538,7 @@ def main():
             players[player].set_rowcol(row,col)
             print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
             if (row,col) in allObjectifs[player]:
-                print("2 le joueur ",player," a atteint son but!")
+                print("le joueur ",player," a atteint son but!")
                 return True
             # mise à jour du pleateau de jeu
             game.mainiteration()
@@ -566,7 +566,7 @@ def main():
             players[player].set_rowcol(row,col)
             print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
             if (row,col) in allObjectifs[player]:
-                print("2 le joueur ",player," a atteint son but!")
+                print("le joueur ",player," a atteint son but!")
                 return True
             # mise à jour du pleateau de jeu
             game.mainiteration()
@@ -834,15 +834,17 @@ def main():
     player = 0
     while(not END):
         if player == 0:
-            if (strategie_3(player, True, 5)):
+            if (strategie_2(player)):
                 break
         else :
-            if (strategie_3(player, False, 5)):
+            if (strategie_1(player)):
                 break
         player = (player +1) % 2
             
     game.mainiteration()
     pygame.quit()
+    print(player)
+    return player
     
     
     
@@ -855,5 +857,6 @@ def main():
    
 
 if __name__ == '__main__':
+    
     main()
  
