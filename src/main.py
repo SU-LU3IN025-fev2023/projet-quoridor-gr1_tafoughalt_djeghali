@@ -49,12 +49,11 @@ def init(_boardname=None):
     game.mainiteration()
     player = game.player
     
-def main():
+def main(strat1 = -1 , strat2 = -1):
 
-    #for arg in sys.argv:
-    iterations = 100 # default
-    if len(sys.argv) == 2:
-        iterations = int(sys.argv[1])
+    if (strat1!=-1 and strat2 !=-1):
+        strategiePlayer1 = strat1
+        strategiePlayer2 = strat2
 
     init()
     
@@ -834,11 +833,70 @@ def main():
     player = 0
     while(not END):
         if player == 0:
-            if (strategie_2(player)):
-                break
+            if (strategiePlayer1==0):
+                print("Aleatoire")
+                if (aleatoire(player)):
+                    break
+            elif (strategiePlayer1==1):
+                print("Strategie Une soit on place un mur sur le chemin de l'adversaire ou aleatoirement")
+                if (strategie_1(player)):
+                    break   
+            elif (strategiePlayer1==2):
+                print("Strategie Une soit on place un mur sur le chemin de l'adversaire ou on se deplace")
+                if (strategie_2(player)):
+                    break   
+            elif (strategiePlayer1==3):
+                print("Strategiese basant sur MinMax")
+                if (strategie_3(player, True, 5)): #Avec MinMax
+                    break   
+            elif (strategiePlayer1==4):
+                print("Strategiese basant sur alpha beta")
+                if (strategie_3(player, False, 5)): #Avec alpha beta
+                    break
+            else:
+                print("IL faut specfifier 2 nombres compris entre [0,4] représantant respectivement les strategie du joueur 1 et du joueur 2 :)")
+                break 
+            """  
+            elif (strategiePlayer1==5):
+                if (strategie_4(player, True, 5)): #Avec MinMax
+                    break 
+            elif (strategiePlayer1==6):
+                if (strategie_4(player, False, 5)): #Avec alpha beta
+                    break 
+            """
+           
         else :
-            if (strategie_1(player)):
-                break
+            if (strategiePlayer2==0):
+                print("Aleatoire")
+                if (aleatoire(player)):
+                    break
+            elif (strategiePlayer2==1):
+                print("Strategie Une soit on place un mur sur le chemin de l'adversaire ou aleatoirement")
+                if (strategie_1(player)):
+                    break   
+            elif (strategiePlayer2==2):
+                print("Strategie Une soit on place un mur sur le chemin de l'adversaire ou on se deplace")
+                if (strategie_2(player)):
+                    break   
+            elif (strategiePlayer2==3):
+                print("Strategiese basant sur MinMax")
+                if (strategie_3(player, True, 5)): #Avec MinMax
+                    break   
+            elif (strategiePlayer2==4):
+                print("Strategiese basant sur alpha beta")
+                if (strategie_3(player, False, 5)): #Avec alpha beta
+                    break
+            else:
+                print("IL faut specfifier 2 nombre compris entre [0,4] représantant respectivement les strategie du joueur 1 et du joueur 2 :)")
+                break 
+            """  
+            elif (strategiePlayer2==5):
+                if (strategie_4(player, True, 5)): #Avec MinMax
+                    break 
+            elif (strategiePlayer2==6):
+                if (strategie_4(player, False, 5)): #Avec alpha beta
+                    break 
+            """
         player = (player +1) % 2
             
     game.mainiteration()
@@ -857,6 +915,16 @@ def main():
    
 
 if __name__ == '__main__':
-    
-    main()
- 
+    #for arg in sys.argv:
+    strategiePlayer1 = 0
+    strategiePlayer2 = 0
+    if len(sys.argv) == 3 :
+        strategiePlayer1 =  int(sys.argv[1])
+        strategiePlayer2 =  int(sys.argv[2])
+        vals = [i for i in range(0,7)]
+        if(strategiePlayer2 not in vals or strategiePlayer1 not in vals):
+            print("\033[1;34;41mIL faut specfifier 2 nombres compris entre [0,6] représantant respectivement les strategies du joueur 1 et du joueur 2 :)")
+        else:
+            main(strategiePlayer1,strategiePlayer2)
+    else:
+        print("\033[1;34;41mIL faut specfifier 2 nombres compris entre [0,6] représantant respectivement les strategies du joueur 1 et du joueur 2 :)")  
