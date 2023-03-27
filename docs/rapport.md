@@ -111,6 +111,20 @@ Afin d'implementer nos différentes strategies nous avons utilisées quelques fo
                     * Si la valeur retourner par l'appel récursif est plus grande ou égale a beta on l'a renvoie .
                     * Sinon on sauvegarde dans alpha le max entre  alpha et le score retourné par l'appel recursif , le joueur max ici essaye de maximiser son propre gain.
                 * On retourne la valeur maximale enregistrée.
+* `choose_action_MonteCarlo` :
+    *   Cette fonction est appellée par notre **stratégie5** qui se base sur l'algorithme *Monte Carlo*
+    * Prends en parametre un joueur.
+    * Cette fonction nous renvoie la meilleure maniere de proceder :
+        * "MOVE" accompagné des coordonnées de la case à laquelle le joueur va se deplacer .
+        * "PLACE_WALL" accompagné des coordonnées des coordonnées des 2 cases ou il faut placer le mur.
+    * Elle appelle l'algorithme monteCarlo en supposant dans un premier temps que la situation correspond au deplecement du joueur , ensuite elle le rappelle en supposant que plutot que se deplacer le joueur place un mur afin de comparer ce 2 éme score aux precedantes valeurs enregistrées et en garder la plus grande .     
+
+ *  `MonteCarlo`:
+    * C'est une imlémentation dans laquelle on fait 50 simulations de parties aleatoires a partir de la siutation actuelle , et on recupére l'heristique de chaque simmulation (chaque noeud) pour les sommer et les retourner par la suite.
+
+ *  `simulation_2`:
+    * Dans cette fonction on se contente de simuler une suite de 4 coups aleatoires pour le joueur, afin de pouvoir ensuite evaluer son heuristique dans la fonction appellante qui est donc *MonteCarlo*.
+    
 ## Description des stratégies proposées: 
 
 * 1. Aléatoire :
@@ -136,6 +150,16 @@ Afin d'implementer nos différentes strategies nous avons utilisées quelques fo
             * Si c'est le cas, elle appelle `draw_wall_location_strategie_2` pour lui retourner une postion sur le chemin de l'adversaire et le place , et fait ensuite appelle a minMax/AlphaBeta sur cette autre configuration du plateau possible : 
                 * Si le score est plus grand que celui retourner apres déplacement du joueur on opte pour cette 2 éme démarche sinon on reste sur la premiere (deplacemment du joueur).
      * Selon donc ce qui a été retourné par choose_action_2 on deplace le joueur vers la case retournée , ou on construit un mÛr sur les cases choisies.
+* 5. Stratégie_5 :
+     * Dans cette strategie on utilise le Monte Carlo. En effet ,en evoquant `choose_action_MonteCarlo`: 
+     * La fonction `choose_action_MonteCarlo` :
+        * suppose dans un premier lieu que le joueur se deplace a la premiere case retournée par A* et evoque ensuite `MonteCarlo` sur cette situation du plateau, et celui -ci va lui retourner un score.
+        
+        * Ensuite elle verifie s'il reste au joueur des murs a placer :
+            * Si c'est le cas, elle appelle `draw_wall_location_strategie_2` pour lui retourner une postion sur le chemin de l'adversaire et le place , et fait ensuite appelle a `MonteCarlo` sur cette autre configuration du plateau possible : 
+                * Si le score est plus grand que celui retourner apres deplacement du joueur on opte pour cette 2 éme demarche sinon on reste sur la premiere (deplacemment du joueur).
+     * Selon donc ce qui a été retourné par `choose_action_MonteCarlo`on deplace le joueur vers la case retournée , ou on construit un mur sur les cases choisies.
+     * On a decidé ici de prendre la valeur maximale car ça represente une direction qui va diriger le joueur vers des noeuds ou encore situations ou l'heurisitique est plus elevée et donc favorable.
 ## Description des résultats
 Comparaison entre les stratégies. Bien indiquer les cartes utilisées.
 
