@@ -161,6 +161,61 @@ Afin d'implementer nos différentes strategies nous avons utilisées quelques fo
      * Selon donc ce qui a été retourné par `choose_action_MonteCarlo`on deplace le joueur vers la case retournée , ou on construit un mur sur les cases choisies.
      * On a decidé ici de prendre la valeur maximale car ça represente une direction qui va diriger le joueur vers des noeuds ou encore situations ou l'heurisitique est plus elevée et donc favorable.
 ## Description des résultats
-Comparaison entre les stratégies. Bien indiquer les cartes utilisées.
+Afin d'évaluer les performances des différentes stratégies, nous avons générer 10 fois 15 parties sur 2 stratégies différentes à parir des quelles on a tracé les graphes suivants :
 
-Blablabla
+![Image](IA/Alea_Strat1.png)
+* La stratégie 1 est plus performante que la stratégie aléatoire.
+
+![Image](IA/Alea_Strat2.png)
+* La stratégie 2  pest plus erformante que la stratégie aléatoire.
+
+![Image](IA/Alea_MinMax.png)
+* La stratégie 3 avec MinMax est plus performante que la stratégie aléatoire.
+
+![Image](IA/Alea_AlphaBeta.png)
+* La stratégie 3 avec AlphaBeta est plus performante que la stratégie aléatoire.
+
+![Image](IA/Strat1_Strat2.png)
+* La stratégie 2 est plus performante que la stratégie 1.
+
+![Image](IA/Strat1_MinMax.png)
+* La stratégie 3 avec MinMax est plus performante que la stratégie 1.
+
+![Image](IA/Strat1_AlphaBeta.png)
+* La stratégie 3 avec AlphaBeta est plus performante que la stratégie 1.
+
+![Image](IA/Strat2_MinMax.png)
+* La stratégie 3 avec MinMax est plus performante que la stratégie 2.
+
+![Image](IA/Strat2_AlphaBeta.png)
+* La stratégie 3 avec AlphaBeta est plus performante que la stratégie 2.
+
+![Image](IA/MinMax_AlphaBeta.png)
+* D'aprés ce graphe on remarque qu'en moyenne la stratégie 3 avec l'algorithme Alphabeta gagne 51% contre MinMax, et cela quand c'est le joueur avec MinMax qui commence.
+
+![Image](IA/AlphaBeta_MinMax.png)
+* En revanche, si c'est le joueur,de la stratégie 3 avec AlphaBeta, qui commence, on a constaté que ce dernier gagne en moyene 49%.
+
+![Image](IA/Alea_MC.png)
+* Monte-Carlo est plus performante que la stratégie aléatoire.
+
+![Image](IA/Strat1_MC.png)
+* Monte-Carlo est plus performante que la stratégie 1.
+
+![Image](IA/Start2_MC.png)
+* Monte-Carlo est plus performante que la stratégie 2.
+![Image](IA/MinMax_MC.png)
+* Notre stratégie MinMax est plus performante que la  MonteCarlo.
+
+## Conclusion génèral :
+D'aprés toutes ces statistiques, on peut conclure que :
+* La stratégie aléatoire est la moins performante par rapport à toutes les autres stratégies.
+* La stratégie 1 est plus performante que la stratégie aléatoire et moins performantes que les autres.
+* La stratégie 2 est plus performante que la stratégie aléatoire et la stratégie 1. En revanche, elle est moins performantes que les autres.
+* La stratégie 3 avec MinMax est plus performante que la stratégie aléatoire, la stratégie 1, la stratégie 2 et Monte-Carlo.
+* La stratégie 3 avec AlphaBeta est plus performante que la stratégie aléatoire, la stratégie 1 et la stratégie 2.
+* En moyenne les deux stratégies avec MinMax et AplhaBeta ont les mêmes performances.
+
+* La stratégie avec l'algorithme de monte-carlo est plus performante par rapport à la stratégie aléatoire, la stratégie 1 et la stratégie 2.
+
+==> Stratégie aléatoire << Stratégie 1 < Stratégie 2 < Monte-Carlo < MinMax et AlphaBeta
