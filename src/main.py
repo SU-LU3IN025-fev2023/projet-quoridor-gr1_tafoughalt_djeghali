@@ -50,7 +50,7 @@ def init(_boardname=None):
     player = game.player
     
 def main(strat1 = -1 , strat2 = -1):
-    
+
     if (strat1!=-1 and strat2 !=-1):
         strategiePlayer1 = strat1
         strategiePlayer2 = strat2
@@ -173,7 +173,6 @@ def main(strat1 = -1 , strat2 = -1):
             if (i<len(path_next_player)-1):
                 i += 1
                 loc = path_next_player[i]
-                print("Loc :",loc,"      i:",i)
 
             else :
                 loc = (random.randint(lMin,lMax),random.randint(cMin,cMax))
@@ -272,26 +271,6 @@ def main(strat1 = -1 , strat2 = -1):
         return l
     
     
-    def possible_wall_placements(player):
-        """
-            @param player: l'indice d'un joueur
-            @return : une liste de couple , contenant les postions des mur pouvant
-            etre placés a proximité du joueur , ainsi qu'une direction ,
-            EX : l[0] = ((2,5),(0,1)) un mur pourrait etre place de maniere horizontale
-            à partir de la case (2,5) => Ses coordonnées seront donc : (2,5),(2,6) 
-        """
-        row , col = players[player].get_rowcol()
-        l = []
-        inc_pos =[(0,1),(0,-1),(1,0),(-1,0)]
-        for pos in inc_pos:
-            loc = (pos[0] + row,pos[1]+col)
-            if legal_wall_position(loc, player):
-                directions =[((0,1),"RIGHT"),((0,-1),"LEFT"),((1,0),"DOWN"),((-1,0),"UP")]
-                for dir in directions:
-                    loc_bis = (loc[0] + dir[0][0],loc[1]+dir[0][1])
-                    if legal_wall_position(loc,  player,loc_bis):
-                        l.append((loc,dir[0]))
-        return l
 
     def evaluation_function(player):
         """
@@ -313,51 +292,7 @@ def main(strat1 = -1 , strat2 = -1):
                 return A*diff_paths + B*diff_nbWalls + C*diff_nearWalls + D*diff_possibleMoves
 
 
-    def choose_action(player , min_max , depth):
-        maxCost = -math.inf
-        row,col = -1,-1
-        direction = None
-        action = ""
-        possibleMoves = possible_moves(player)
-        for pos in possibleMoves:
-            sauv_pos = players[player].get_rowcol()
-            players[player].set_rowcol(pos[0], pos[1])
-            posPlayers[player]= pos
-            if min_max :
-                cost = MinMax(player,depth , 1)
-            else :
-                cost = alpha_beta(player,depth , -math.inf , math.inf , 1)
-            players[player].set_rowcol(sauv_pos[0] , sauv_pos[1])
-            posPlayers[player]= sauv_pos
-            
-            if maxCost < cost :
-                row , col = pos[0] , pos[1]
-                maxCost = cost
-                action = "MOVE"
-        
-        if(nb_walls(player))>0 :
-            
-            possibleWallsPosition = possible_wall_placements(player)
-            for pos,dir in possibleWallsPosition :
-                w1 , w2 = more_walls(player)
-                sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                w1.set_rowcol(pos[0] , pos[1])
-                w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
-                if MinMax :
-                    cost = MinMax(player,depth , 1)
-                else :
-                    cost = alpha_beta(player,depth , -math.inf , math.inf , 1)
-                w1.set_rowcol(sauv_w[0][0], sauv_w[0][1])
-                w2.set_rowcol(sauv_w[1][0] , sauv_w[1][1])
-                
-                if maxCost < cost :
-                    row , col = pos[0] , pos[1]
-                    direction = dir
-                    maxCost = cost
-                    action = "PLACE_WALL"
-                    
-        return action , row , col , direction
-
+    
     def choose_action_2(player , min_max , depth):
         maxCost = -math.inf
         row,col = -1,-1
@@ -389,7 +324,7 @@ def main(strat1 = -1 , strat2 = -1):
                 sauv_w = w1.get_rowcol() , w2.get_rowcol()
                 w1.set_rowcol(pos[0][0] , pos[0][1])
                 w2.set_rowcol(pos[1][0] , pos[1][1])
-                if MinMax :
+                if min_max :
                     cost = MinMax_2(player,depth , 1)
                 else :
                     cost = alpha_beta_2(player,depth , -math.inf , math.inf , 1)
@@ -404,234 +339,9 @@ def main(strat1 = -1 , strat2 = -1):
                     
         return action , row , col , row2 , col2
 
-    
-    #-------------------------------
-    # Stratégie aléatoire
-    #-------------------------------
-    def aleatoire ( joueur ) :
-        print("C'est le tour du joueur ",player)
-        w = more_walls(player)
-        if( w != None):
-            action = random.randint(0,1)
-            if action == 0 :
-                #placer un mur
-                print("création d'un mur")
-                ((x1,y1),(x2,y2)) = draw_random_wall_location(player)
-                w[0].set_rowcol(x1,y1)
-                w[1].set_rowcol(x2,y2)
-                print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
-                game.mainiteration()
-            else:
-                #déplacer le joueur
-                #for i in range(iterations):
-                
-                # on fait bouger le joueur i jusqu'à son but
-                # en suivant le chemin trouve avec A* 
-                    row,col = A_star(player)[1]
-                    posPlayers[player]=(row,col)
-                    players[player].set_rowcol(row,col)
-                    print ("1 pos joueur ",player," : ", row,col)
-                    if (row,col) in allObjectifs[player]:
-                        print("le joueur ",player," a atteint son but!")
-                        return True
-                    # mise à jour du pleateau de jeu
-                    game.mainiteration()
-
-        else:
-            #déplacer le joueur
-            #for i in range(iterations):
-            
-            # on fait bouger le joueur i jusqu'à son but
-            # en suivant le chemin trouve avec A* 
-                row,col = A_star(player)[1]
-                posPlayers[player]=(row,col)
-                players[player].set_rowcol(row,col)
-                print ("pos joueur ",player," : ", row,col)
-                if (row,col) in allObjectifs[player]:
-                    print("2 le joueur ",player," a atteint son but!")
-                    return True
-                # mise à jour du pleateau de jeu
-                game.mainiteration() 
-        return False
-    
-    #-------------------------------
-    # Stratégie 2
-    #-------------------------------
-    def strategie_1( player ):
-        print("C'est le tour du joueur ",player)
-        w = more_walls(player)
-        path_current_player = A_star(player)
-        path_next_player = A_star((player+1)%2)
-        if( w != None and len(path_current_player) > len(path_next_player) ):
-            #placer un mur
-            print("création d'un mur")
-            ((x1,y1),(x2,y2)) = draw_wall_location_strategie_1(player , path_next_player)
-            w[0].set_rowcol(x1,y1)
-            w[1].set_rowcol(x2,y2)
-            print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
-            game.mainiteration()
-        else:
-            #déplacer le joueur
-            # on fait bouger le joueur i jusqu'à son but
-            # en suivant le chemin trouve avec A* 
-            row,col = A_star(player)[1]
-            posPlayers[player]=(row,col)
-            players[player].set_rowcol(row,col)
-            print ("pos joueur ",player," : ", row,col)
-            if (row,col) in allObjectifs[player]:
-                print("2 le joueur ",player," a atteint son but!")
-                return True
-            # mise à jour du pleateau de jeu
-            game.mainiteration()
-    #-------------------------------
-    # Stratégie 2
-    #-------------------------------
-    def strategie_2( player ):
-        print("C'est le tour du joueur ",player)
-        w = more_walls(player)
-        path_current_player = A_star(player)
-        path_next_player = A_star((player+1)%2)
-        if( w != None and len(path_current_player) > len(path_next_player) and draw_wall_location_strategie_2(player , path_next_player) != None ):
-                #placer un mur
-                print("création d'un mur")
-                ((x1,y1),(x2,y2)) = draw_wall_location_strategie_2(player , path_next_player)
-                w[0].set_rowcol(x1,y1)
-                w[1].set_rowcol(x2,y2)
-                print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
-                game.mainiteration()
-        else:
-            #déplacer le joueur
-            # on fait bouger le joueur i jusqu'à son but
-            # en suivant le chemin trouve avec A* 
-                row,col = A_star(player)[1]
-                posPlayers[player]=(row,col)
-                players[player].set_rowcol(row,col)
-                print ("pos joueur ",player," : ", row,col)
-                if (row,col) in allObjectifs[player]:
-                    print("Le joueur ",player," a atteint son but!")
-                    return True
-                # mise à jour du pleateau de jeu
-                game.mainiteration()
-
-    #-------------------------------
-    # Stratégie_3
-    #-------------------------------
-    def strategie_3(player, MinMax , depth):    
-        print("C'est le tour du joueur ",player)
-        action = choose_action_2(player , MinMax , depth)
-        if( action[0] == "PLACE_WALL" ):
-            #placer un mur
-            w = more_walls(player)
-            print("création d'un mur")
-            x1,y1 = action[1] , action[2]
-            x2,y2 = action[3] , action[4]
-            w[0].set_rowcol(x1,y1)
-            w[1].set_rowcol(x2,y2)
-            print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
-            game.mainiteration()
-        else:
-            #déplacer le joueur* 
-            print("déplacer le joueur")
-            row,col = action[1], action[2]
-            posPlayers[player]=(row,col)
-            players[player].set_rowcol(row,col)
-            print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
-            if (row,col) in allObjectifs[player]:
-                print("2 le joueur ",player," a atteint son but!")
-                return True
-            # mise à jour du pleateau de jeu
-            game.mainiteration()
-    #-------------------------------
-    # Stratégie_4
-    #-------------------------------
-    def strategie_4(player, MinMax , depth):    
-        print("C'est le tour du joueur ",player)
-        action = choose_action(player , MinMax , depth)
-        if( action[0] == "PLACE_WALL" ):
-            #placer un mur
-            w = more_walls(player)
-            print("création d'un mur")
-            x1,y1 = action[1] , action[2]
-            x2,y2 = action[3] , action[4]
-            w[0].set_rowcol(x1,y1)
-            w[1].set_rowcol(x2,y2)
-            print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
-            game.mainiteration()
-        else:
-            #déplacer le joueur* 
-            print("déplacer le joueur")
-            row,col = action[1], action[2]
-            posPlayers[player]=(row,col)
-            players[player].set_rowcol(row,col)
-            print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
-            if (row,col) in allObjectifs[player]:
-                print("2 le joueur ",player," a atteint son but!")
-                return True
-            # mise à jour du pleateau de jeu
-            game.mainiteration()
     #-------------------------------
     # Stratégie alpha_beta
     #-------------------------------
-    def alpha_beta( player , depth , alpha , beta , d):
-        if depth == d :
-            return evaluation_function(player)
-        else :
-            if d%2 == 0 :
-                #MAX
-                val = -math.inf
-                possibleMoves = possible_moves(player)
-                for m in possibleMoves :
-                    sauv_pos = players[player].get_rowcol()
-                    players[player].set_rowcol(m[0] , m[1])
-                    posPlayers[player]= m
-                    val = max(val ,alpha_beta( player , depth, alpha , beta , d+1) )
-                    players[player].set_rowcol(sauv_pos[0] , sauv_pos[1])
-                    posPlayers[player]= sauv_pos
-                    if val >= beta :
-                        return val
-                    alpha = max(alpha , val)
-                if nb_walls(player) > 0 :
-                    possibleWallsPosition = possible_wall_placements(player)
-                    for pos,dir in possibleWallsPosition :
-                        w1 , w2 = more_walls(player)
-                        sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                        w1.set_rowcol(pos[0] , pos[1])
-                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
-                        val = max(val ,alpha_beta( player , depth , alpha , beta , d+1) )
-                        w1.set_rowcol(sauv_w[0][0] ,sauv_w[0][1] )
-                        w2.set_rowcol(sauv_w[1][0] , sauv_w[1][1])
-                        if val >= beta :
-                            return val
-                        alpha = max(alpha , val)
-            else:
-                #MIN
-                val = math.inf
-                possibleMoves = possible_moves((player + 1)%2)
-                for m in possibleMoves :
-                    sauv_pos = players[(player + 1)%2].get_rowcol()
-                    players[(player + 1)%2].set_rowcol(m[0] , m[1])
-                    posPlayers[(player + 1)%2]= m
-                    val = min(val ,alpha_beta( player , depth , alpha , beta , d+1) )
-                    players[(player + 1)%2].set_rowcol(sauv_pos[0] , sauv_pos[1])
-                    posPlayers[(player + 1)%2]= sauv_pos
-                    if alpha >= val :
-                        return val
-                    beta = min(beta , val)
-                if nb_walls((player + 1)%2) > 0 :
-                    possibleWallPlacement = possible_wall_placements((player + 1)%2) 
-                    for pos, dir in possibleWallPlacement :
-                        w1 , w2 = more_walls((player + 1)%2)
-                        sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                        w1.set_rowcol(pos[0] , pos[1])
-                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
-                        val = min(val ,alpha_beta( player , depth , alpha , beta , d+1) )
-                        w1.set_rowcol(sauv_w[0][0] , sauv_w[0][1])
-                        w2.set_rowcol(sauv_w[1][0] , sauv_w[1][1] )
-                        if alpha >= val :
-                            return val
-                    beta = min(beta , val)
-        return val
-    
     def alpha_beta_2( player , depth , alpha , beta , d):
         if depth == d :
             return evaluation_function(player)
@@ -702,60 +412,6 @@ def main(strat1 = -1 , strat2 = -1):
     #-------------------------------
     # Stratégie MinMax
     #-------------------------------
-    def MinMax (player, depth ,d):
-        if depth ==d : 
-            return evaluation_function(player)
-        else :
-            if (depth % 2 == 0):
-                max_ev = -math.inf
-                possibleMoves = possible_moves(player)
-                for pos in possibleMoves:
-                    sauv_pos = players[player].get_rowcol()
-                    players[player].set_rowcol(pos[0],pos[1])
-                    posPlayers[player]= pos
-                    eval = MinMax(player,depth , d+1)
-                    players[player].set_rowcol(sauv_pos[0] ,sauv_pos[1] )
-                    posPlayers[player]= sauv_pos
-                    max_ev = max(eval, max_ev)
-
-                
-                if(nb_walls(player))>0 :
-                    possibleWallsPosition = possible_wall_placements(player)
-                    for pos,dir in possibleWallsPosition :
-                        w1 , w2 = more_walls(player)
-                        sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                        w1.set_rowcol(pos[0] , pos[1])
-                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
-                        eval = MinMax(player,depth, d+1)
-                        w1.set_rowcol(sauv_w[0][0] ,sauv_w[0][1] )
-                        w2.set_rowcol(sauv_w[1][0] , sauv_w[1][1] )
-                        max_ev = max(eval, max_ev)             
-                return max_ev
-            else:
-                min_ev = math.inf
-                possibleMoves = possible_moves((player + 1)%2)
-                for pos in possibleMoves:
-                    sauv_pos = players[(player + 1)%2].get_rowcol()
-                    players[(player + 1)%2].set_rowcol(pos[0],pos[1])
-                    posPlayers[(player + 1)%2]= pos
-                    eval = MinMax(player, depth, d+1)
-                    players[(player + 1)%2].set_rowcol(sauv_pos[0], sauv_pos[1])
-                    posPlayers[(player + 1)%2]= sauv_pos
-                    min_ev = min(eval, min_ev)
-                
-                if(nb_walls((player + 1)%2))>0 :
-                    possibleWallsPosition = possible_wall_placements((player + 1)%2)
-                    for pos,dir in possibleWallsPosition :
-                        w1 , w2 = more_walls((player + 1)%2)
-                        sauv_w = w1.get_rowcol() , w2.get_rowcol()
-                        w1.set_rowcol(pos[0] , pos[1])
-                        w2.set_rowcol(pos[0]+dir[0] ,pos[1]+dir[1])
-                        eval = MinMax(player, depth, d+1)
-                        w1.set_rowcol(sauv_w[0][0] , sauv_w[0][1])
-                        w2.set_rowcol(sauv_w[1][0] , sauv_w[1][1])
-                        min_ev = min(eval, min_ev)                  
-                    
-                return min_ev
             
     def MinMax_2 (player, depth ,d):
         if depth ==d : 
@@ -823,6 +479,317 @@ def main(strat1 = -1 , strat2 = -1):
         
     
     #-------------------------------
+    #Choose_action for monte carlo
+    #-------------------------------
+
+    def choose_action_MonteCarlo(player ):
+        maxCost = -math.inf
+        row,col = -1,-1
+        row2,col2 = -1,-1
+        action = ""
+
+        pos = A_star(player)[1]
+        sauv_pos = players[player].get_rowcol()
+        players[player].set_rowcol(pos[0], pos[1])
+        posPlayers[player]= pos
+        cost = MonteCarlo(player)
+        players[player].set_rowcol(sauv_pos[0] , sauv_pos[1])
+        posPlayers[player]= sauv_pos
+            
+        if maxCost < cost :
+            row , col = pos[0] , pos[1]
+            maxCost = cost
+            action = "MOVE"
+
+        
+        if(nb_walls(player))>0 :
+            path_next_player = A_star((player+1)%2)
+            if draw_wall_location_strategie_2(player , path_next_player) != None:
+                pos = draw_wall_location_strategie_2(player , path_next_player)
+                w1 , w2 = more_walls(player)
+                sauv_w = w1.get_rowcol() , w2.get_rowcol()
+                w1.set_rowcol(pos[0][0] , pos[0][1])
+                w2.set_rowcol(pos[1][0] , pos[1][1])
+                cost = MonteCarlo(player)
+                w1.set_rowcol(sauv_w[0][0], sauv_w[0][1])
+                w2.set_rowcol(sauv_w[1][0] , sauv_w[1][1])
+                    
+                if maxCost < cost :
+                        row , col = pos[0] 
+                        row2 , col2 = pos[1]
+                        maxCost = cost
+                        action = "PLACE_WALL"
+                    
+        return action , row , col , row2 , col2
+    
+    #-------------------------------
+    #Monte Carlo
+    #-------------------------------
+    def MonteCarlo (player):
+        nb_simulations = 50
+        result = 0
+        for i in range(nb_simulations):
+            players_pos , walls_pos = save_state()
+            #faire un appel à la fonction simulation
+            simulation_2(player)
+            #incrémenter le comteur si la fonction retourne player (gagner)
+            result += evaluation_function(player)
+            restore_state(players_pos , walls_pos)
+        #retourner la valeur
+        return result
+    
+    
+    
+    #-------------------------------
+    #Fonction de siulation
+    #-------------------------------
+    def simulation(player):
+        p = player
+        if players[p].get_rowcol() in allObjectifs[p] :
+            #le joueur courant est arrivée à son objectif
+            return p
+        if players[(p+1)%2].get_rowcol() in allObjectifs[(p+1)%2] :
+            #le joueur adversaire est arrivée à son objectif
+            return (p+1)%2
+        while(True):
+            w = more_walls(p)
+            action = random.randint(0,1)
+            if( w != None and action==0):
+                    #placer un mur
+                    ((x1,y1),(x2,y2)) = draw_random_wall_location(p)
+                    w[0].set_rowcol(x1,y1)
+                    w[1].set_rowcol(x2,y2)
+            else:
+                #déplacer le joueur
+                    row,col = A_star(p)[1]
+                    posPlayers[p]=(row,col)
+                    players[p].set_rowcol(row,col)
+                    if (row,col) in allObjectifs[p]:
+                        return p
+            p = (p+1)%2
+
+    def simulation_2(player):
+        p = player
+        if players[p].get_rowcol() in allObjectifs[p] :
+            #le joueur courant est arrivée à son objectif
+            return 0
+        if players[(p+1)%2].get_rowcol() in allObjectifs[(p+1)%2] :
+            #le joueur adversaire est arrivée à son objectif
+            return 0
+        for i in range(4):
+            w = more_walls(p)
+            action = random.randint(0,1)
+            if( w != None and action==0):
+                    #placer un mur
+                    ((x1,y1),(x2,y2)) = draw_random_wall_location(p)
+                    w[0].set_rowcol(x1,y1)
+                    w[1].set_rowcol(x2,y2)
+            else:
+                #déplacer le joueur
+                    row,col = A_star(p)[1]
+                    posPlayers[p]=(row,col)
+                    players[p].set_rowcol(row,col)
+                    if (row,col) in allObjectifs[p]:
+                        return 0
+            p = (p+1)%2
+            i+=1
+
+    #-------------------------------
+    #Sauvgarder toutes les positions des murs et celle des joueur courants
+    #-------------------------------
+    def save_state():
+        players_pos = playerStates(players)
+        walls_pos = wallStates(allWalls)
+        return players_pos , walls_pos
+
+    #-------------------------------
+    #Restorer toutes les positions des murs et celle des joueur courants
+    #-------------------------------
+    def restore_state(players_pos , walls_pos):
+        for p in range(2):
+            posPlayers[p]=players_pos[p]
+            players[p].set_rowcol(players_pos[p][0] , players_pos[p][1])
+        for i in range(len(walls_pos)) :
+            allWalls[i].set_rowcol(walls_pos[i][0],walls_pos[i][1])
+
+
+
+    
+    #-------------------------------
+    # Stratégie aléatoire
+    #-------------------------------
+    def aleatoire ( joueur ) :
+        print("C'est le tour du joueur ",player)
+        w = more_walls(player)
+        if( w != None):
+            action = random.randint(0,1)
+            if action == 0 :
+                #placer un mur
+                print("création d'un mur")
+                ((x1,y1),(x2,y2)) = draw_random_wall_location(player)
+                w[0].set_rowcol(x1,y1)
+                w[1].set_rowcol(x2,y2)
+                print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
+                game.mainiteration()
+            else:
+                #déplacer le joueur
+                #for i in range(iterations):
+                
+                # on fait bouger le joueur i jusqu'à son but
+                # en suivant le chemin trouve avec A* 
+                    row,col = A_star(player)[1]
+                    posPlayers[player]=(row,col)
+                    players[player].set_rowcol(row,col)
+                    print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
+                    if (row,col) in allObjectifs[player]:
+                        print("le joueur ",player," a atteint son but!")
+                        return True
+                    # mise à jour du pleateau de jeu
+                    game.mainiteration()
+
+        else:
+            #déplacer le joueur
+            #for i in range(iterations):
+            
+            # on fait bouger le joueur i jusqu'à son but
+            # en suivant le chemin trouve avec A* 
+                row,col = A_star(player)[1]
+                posPlayers[player]=(row,col)
+                players[player].set_rowcol(row,col)
+                print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
+                if (row,col) in allObjectifs[player]:
+                    print("le joueur ",player," a atteint son but!")
+                    return True
+                # mise à jour du pleateau de jeu
+                game.mainiteration() 
+        return False
+    
+    #-------------------------------
+    # Stratégie 1
+    #-------------------------------
+    def strategie_1( player ):
+        print("C'est le tour du joueur ",player)
+        w = more_walls(player)
+        path_current_player = A_star(player)
+        path_next_player = A_star((player+1)%2)
+        if( w != None and len(path_current_player) > len(path_next_player) ):
+            #placer un mur
+            print("création d'un mur")
+            ((x1,y1),(x2,y2)) = draw_wall_location_strategie_1(player , path_next_player)
+            w[0].set_rowcol(x1,y1)
+            w[1].set_rowcol(x2,y2)
+            print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
+            game.mainiteration()
+        else:
+            #déplacer le joueur
+            # on fait bouger le joueur i jusqu'à son but
+            # en suivant le chemin trouve avec A* 
+            row,col = A_star(player)[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
+            if (row,col) in allObjectifs[player]:
+                print("le joueur ",player," a atteint son but!")
+                return True
+            # mise à jour du pleateau de jeu
+            game.mainiteration()
+    #-------------------------------
+    # Stratégie 2
+    #-------------------------------
+    def strategie_2( player ):
+        print("C'est le tour du joueur ",player)
+        w = more_walls(player)
+        path_current_player = A_star(player)
+        path_next_player = A_star((player+1)%2)
+        if( w != None and len(path_current_player) > len(path_next_player) and draw_wall_location_strategie_2(player , path_next_player) != None ):
+                #placer un mur
+                print("création d'un mur")
+                ((x1,y1),(x2,y2)) = draw_wall_location_strategie_2(player , path_next_player)
+                w[0].set_rowcol(x1,y1)
+                w[1].set_rowcol(x2,y2)
+                print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
+                game.mainiteration()
+        else:
+            #déplacer le joueur
+            # on fait bouger le joueur i jusqu'à son but
+            # en suivant le chemin trouve avec A* 
+                row,col = A_star(player)[1]
+                posPlayers[player]=(row,col)
+                players[player].set_rowcol(row,col)
+                print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
+                if (row,col) in allObjectifs[player]:
+                    print("Le joueur ",player," a atteint son but!")
+                    return True
+                # mise à jour du pleateau de jeu
+                game.mainiteration()
+
+    #-------------------------------
+    # Stratégie_3
+    #-------------------------------
+    def strategie_3(player, MinMax , depth):    
+        print("C'est le tour du joueur ",player)
+        action = choose_action_2(player , MinMax , depth)
+        if( action[0] == "PLACE_WALL" ):
+            #placer un mur
+            w = more_walls(player)
+            print("création d'un mur")
+            x1,y1 = action[1] , action[2]
+            x2,y2 = action[3] , action[4]
+            w[0].set_rowcol(x1,y1)
+            w[1].set_rowcol(x2,y2)
+            print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
+            game.mainiteration()
+        else:
+            #déplacer le joueur* 
+            print("déplacer le joueur")
+            row,col = action[1], action[2]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
+            if (row,col) in allObjectifs[player]:
+                print("le joueur ",player," a atteint son but!")
+                return True
+            # mise à jour du pleateau de jeu
+            game.mainiteration()
+    
+
+    
+    #-------------------------------
+    # Stratégie_5
+    #-------------------------------
+    def strategie_5(player):    
+        print("C'est le tour du joueur ",player)
+        action = choose_action_MonteCarlo(player )
+        if( action[0] == "PLACE_WALL" ):
+            #placer un mur
+            w = more_walls(player)
+            print("création d'un mur")
+            x1,y1 = action[1] , action[2]
+            x2,y2 = action[3] , action[4]
+            w[0].set_rowcol(x1,y1)
+            w[1].set_rowcol(x2,y2)
+            print ("Le joueur ",player," a placé un mur sur les case (",x1,",",y1,") et (",x2,",",y2,") ")
+            game.mainiteration()
+        else:
+            #déplacer le joueur* 
+            print("déplacer le joueur")
+            row,col = action[1], action[2]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            print ("Le joueur ",player," s'est déplacer vers la case (",row,",",col,")  ")
+            if (row,col) in allObjectifs[player]:
+                print("le joueur ",player," a atteint son but!")
+                return True
+            # mise à jour du pleateau de jeu
+            game.mainiteration()
+
+
+    
+
+    
+
+
+    #-------------------------------
     # Boucle principale de déplacements 
     #-------------------------------
     
@@ -853,17 +820,13 @@ def main(strat1 = -1 , strat2 = -1):
                 print("Strategiese basant sur alpha beta")
                 if (strategie_3(player, False, 5)): #Avec alpha beta
                     break
+            elif (strategiePlayer1==5):
+                print("Strategiese basant sur MonteCarlo")
+                if (strategie_5(player)):
+                    break
             else:
                 print("IL faut specfifier 2 nombres compris entre [0,4] représantant respectivement les strategie du joueur 1 et du joueur 2 :)")
-                break 
-            """  
-            elif (strategiePlayer1==5):
-                if (strategie_4(player, True, 5)): #Avec MinMax
-                    break 
-            elif (strategiePlayer1==6):
-                if (strategie_4(player, False, 5)): #Avec alpha beta
-                    break 
-            """
+                break
            
         else :
             if (strategiePlayer2==0):
@@ -886,21 +849,18 @@ def main(strat1 = -1 , strat2 = -1):
                 print("Strategiese basant sur alpha beta")
                 if (strategie_3(player, False, 5)): #Avec alpha beta
                     break
+            elif (strategiePlayer2==5):
+                print("Strategiese basant sur MonteCarlo")
+                if (strategie_5(player)):
+                    break
             else:
                 print("IL faut specfifier 2 nombre compris entre [0,4] représantant respectivement les strategie du joueur 1 et du joueur 2 :)")
                 break 
-            """  
-            elif (strategiePlayer2==5):
-                if (strategie_4(player, True, 5)): #Avec MinMax
-                    break 
-            elif (strategiePlayer2==6):
-                if (strategie_4(player, False, 5)): #Avec alpha beta
-                    break 
-            """
         player = (player +1) % 2
             
     game.mainiteration()
     pygame.quit()
+    return player
     
     
     
@@ -925,4 +885,4 @@ if __name__ == '__main__':
         else:
             main(strategiePlayer1,strategiePlayer2)
     else:
-        print("\033[1;34;41mIL faut specfifier 2 nombres compris entre [0,6] représantant respectivement les strategies du joueur 1 et du joueur 2 :)")     
+        print("\033[1;34;41mIL faut specfifier 2 nombres compris entre [0,6] représantant respectivement les strategies du joueur 1 et du joueur 2 :)")  
